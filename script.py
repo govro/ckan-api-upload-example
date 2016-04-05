@@ -11,8 +11,9 @@ AUTHORIZATION_CODE = '' or os.getenv('AUTHORIZATION_CODE')
 CKAN_URL = '' or os.getenv('CKAN_URL')
 
 # Put the details of the dataset we're going to create into a dict.
+dataset_name = 'something_unique-' + str(random.randint(0, 10000)) # take care the name should be always unique
 dataset_dict = {
-    'name': 'something_unique-' + str(random.randint(0, 10000)), # take care the name should be always unique
+    'name': dataset_name,
     'notes': 'Tra la la',
     'owner_org': 'aadr',
 }
@@ -38,3 +39,16 @@ assert response_dict['success'] is True
 # package_create returns the created package as its result.
 created_package = response_dict['result']
 pprint.pprint(created_package)
+
+# upload the file resource
+url = CKAN_URL + '/api/action/resource_create'
+response = requests.post(url,
+                         data={"package_id": dataset_name,
+                               'url': ''}, # add this because validation will fail
+                         headers={"X-CKAN-API-Key": AUTHORIZATION_CODE},
+                         files=[('upload', file('test.txt'))])
+
+# test everythin went well
+assert response.status_code == 200
+response_dict = json.loads(response.content)
+pprint.pprint(response_dict['result'])
